@@ -1,13 +1,13 @@
 import math
 import random
 
-def calcPeso(sol,values):
+def calcularPeso(sol,values):
     peso = 0
     for i in range(N):
         peso = peso + sol[i]*(values[i][0])
     return peso
 
-def calcFitness(population,values,N,P):
+def calcularFitness(population,values,N,P):
     fitness=[]
     for i in range(P):
         valor = 0
@@ -26,7 +26,7 @@ def initialPopulation(values,N,P,W):
             pos = random.randrange(0,4,1)
             sol[pos] = random.randrange(0,2,1)
             pesoAnt = peso
-            peso = calcPeso(sol,values)
+            peso = calcularPeso(sol,values)
             if peso > W:
                 sol[pos] = 0
                 peso = pesoAnt
@@ -40,6 +40,18 @@ def actualizarG(t,G0,alpha,maxIter):
     G = G * G0
     return G
 
+def calcularMasas(fit,best,worst,P):
+    m=[]
+    M=[]
+    for i in range(P):
+        m.append((fitness[i]-worst)/(best-worst))
+    for i in range(P):
+        suma = 0
+        for j in m:
+            suma = suma + j   
+        M.append(m[i]/suma)
+    return M
+
 values = [[2,3],[3,4],[4,5],[5,6]]
 N = 4
 P = 4
@@ -50,16 +62,20 @@ maxIter = 10
 population = initialPopulation(values,N,P,W)
 best = []
 worst = []
+M=[]
+F = []
 print(population)
 
 for i in range(maxIter):
-    fitness = calcFitness(population,values,N,P)
+    fitness = calcularFitness(population,values,N,P)
     G = actualizarG(i,G0,alpha,maxIter)
     print(G)
     b = max(fitness)
     best = fitness.index(b)
     w = min(fitness)
     worst = fitness.index(w)
-    print(population[best], fitness[best])
-    print(population[worst], fitness[worst])
-    
+    print('Best: ' + str(population[best]) + str(fitness[best]))
+    print('Worst: '+ str(population[worst]) + str(fitness[worst]))
+    M = calcularMasas(fitness,b,w,P)
+    print(M)
+    # F = calcularFuerzas()
