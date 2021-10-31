@@ -1,5 +1,6 @@
 import math
 import random
+import numpy as np
 
 def calcularPeso(sol,values):
     peso = 0
@@ -52,6 +53,46 @@ def calcularMasas(fit,best,worst,P):
         M.append(m[i]/suma)
     return M
 
+def restPos(xi,xj,d):
+    return xj[d] - xi[d]
+
+def calcularR(x1,x2,N):
+    suma=0
+    for i in range(N):
+        suma = suma + (x2[i]-x1[i])**2
+    R=math.sqrt(suma)
+    return R
+
+def calcularFuerzas(P,N,G,M,population):
+    FT=[]
+    Ft=[]
+    f=[]
+    
+    for i in range(P):
+        Ft=[]
+        for j in range(P):
+            f=[]
+            for d in range(N):
+                value=0
+                value = value+M[i]*M[j]
+                value = value/(calcularR(population[i],population[j],N)+.1)
+                value = value*G*restPos(population[i],population[j],d)
+                f.append(value)
+                print
+            Ft.append(f)
+        FT.append(Ft)
+    F=[]
+    # for i in range(P):
+    #     value=0
+    #     for j in range(P): 
+    #         if j != i :
+    #             for d in range(N):
+    #                 r = random.random()
+    #                 value = value +(r*np.array(FT)[i,j,d])
+    #     F.append(value)
+    return(FT)
+
+
 values = [[2,3],[3,4],[4,5],[5,6]]
 N = 4
 P = 4
@@ -66,16 +107,18 @@ M=[]
 F = []
 print(population)
 
-for i in range(maxIter):
+for i in range(1):
     fitness = calcularFitness(population,values,N,P)
+    print(fitness)
     G = actualizarG(i,G0,alpha,maxIter)
-    print(G)
+    # print(G)
     b = max(fitness)
     best = fitness.index(b)
     w = min(fitness)
     worst = fitness.index(w)
-    print('Best: ' + str(population[best]) + str(fitness[best]))
-    print('Worst: '+ str(population[worst]) + str(fitness[worst]))
+    # print('Best: ' + str(population[best]) + str(fitness[best]))
+    # print('Worst: '+ str(population[worst]) + str(fitness[worst]))
     M = calcularMasas(fitness,b,w,P)
     print(M)
-    # F = calcularFuerzas()
+    F = calcularFuerzas(P,N,G,M,population)
+    print(np.array(F))
