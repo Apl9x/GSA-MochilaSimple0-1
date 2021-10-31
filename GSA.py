@@ -82,16 +82,53 @@ def calcularFuerzas(P,N,G,M,population):
             Ft.append(f)
         FT.append(Ft)
     F=[]
-    # for i in range(P):
-    #     value=0
-    #     for j in range(P): 
-    #         if j != i :
-    #             for d in range(N):
-    #                 r = random.random()
-    #                 value = value +(r*np.array(FT)[i,j,d])
-    #     F.append(value)
-    return(FT)
+    f=[]
+    for i in range(P):
+        f=[]
+        for j in range(P): 
+            value=0
+            if j != i :
+                for d in range(N):
+                    r = random.random()
+                    value = value +(r*np.array(FT)[i,j,d])
+            f.append(value)
+        F.append(f)
+    return(F)
 
+def calcularAceleracion(P,N,M,F):
+    a=[]
+    for i in range(P):
+        vec=[]
+        for j in range(N):
+            if F[i][j] > 0 and M[i] > 0:
+                v = F[i][j]/M[i]
+                vec.append(v)
+            else:
+                vec.append(0)
+        a.append(vec)
+    return a
+
+def calcularVelocidad(P,N,v,a):
+    _v = []
+    for i in range(P):
+        vec=[]
+        for j in range(N):
+            value = random.random()
+            value = value  * (v[i][j]+a[i][j])
+            vec.append(value)
+        _v.append(vec)
+    return _v
+
+def calcularPosiciones(P,N,population,v,values,W):
+    for i in range(P):
+        for j in range(N):
+            if v[i][j] > 0 and population[i][j]==0:
+                population[i][j]= 1
+                if calcularPeso(population[i],values) > W:
+                    population[i][j]= 0
+            elif v[i][j] < 0 and population[i][j]==1:
+                population[i][j]= 0
+    return population
 
 values = [[2,3],[3,4],[4,5],[5,6]]
 N = 4
@@ -101,24 +138,33 @@ G0 = 100.0
 alpha = 2
 maxIter = 10
 population = initialPopulation(values,N,P,W)
+v=list(np.zeros((P, N)))
 best = []
 worst = []
 M=[]
 F = []
-print(population)
+a=[]
+print("Poblacion: ",population)
 
-for i in range(1):
+for i in range(maxIter):
     fitness = calcularFitness(population,values,N,P)
-    print(fitness)
+    print("fitness: ",fitness)
     G = actualizarG(i,G0,alpha,maxIter)
-    # print(G)
+    print("G: ",G)
     b = max(fitness)
     best = fitness.index(b)
     w = min(fitness)
     worst = fitness.index(w)
-    # print('Best: ' + str(population[best]) + str(fitness[best]))
-    # print('Worst: '+ str(population[worst]) + str(fitness[worst]))
+    print('Best: ' + str(population[best]) + str(fitness[best]))
+    print('Worst: '+ str(population[worst]) + str(fitness[worst]))
     M = calcularMasas(fitness,b,w,P)
-    print(M)
+    print("Masas: ",M)
     F = calcularFuerzas(P,N,G,M,population)
-    print(np.array(F))
+    print("Fuerzas sobre cada agente: ",np.array(F))
+    a = calcularAceleracion(P,N,M,F)
+    print("Aceleracion: ",a)
+    v = calcularVelocidad(P,N,v,a)
+    print("Velocidad: ",v)
+    population = calcularPosiciones(P,N,population,v,values,W)
+    print("-------------------------------------------------------------------")
+    print("Nueva Poblacion: ",population)
