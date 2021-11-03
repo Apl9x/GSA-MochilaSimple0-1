@@ -1,6 +1,7 @@
 import math
 import random
 import numpy as np
+import pandas as pd
 
 def calcularPeso(sol,values):
     peso = 0
@@ -19,13 +20,14 @@ def calcularFitness(population,values,N,P):
 
 def initialPopulation(values,N,P,W):
     population = []
+    iteraciones = N
     for i in range(P):
         sol = [0]*N
         peso = 0  
         j = 0
-        while peso < W and j < 5:
-            pos = random.randrange(0,4,1)
-            sol[pos] = random.randrange(0,2,1)
+        while peso < W and j < iteraciones:
+            pos = random.randrange(0,N,1)
+            sol[pos] = 1
             pesoAnt = peso
             peso = calcularPeso(sol,values)
             if peso > W:
@@ -63,7 +65,7 @@ def calcularR(x1,x2,N):
     R=math.sqrt(suma)
     return R
 
-def calcularFuerzas(P,N,G,M,population):
+def calcularFuerzas(P,N,G,M,population,e):
     FT=[]
     Ft=[]
     f=[]
@@ -75,7 +77,7 @@ def calcularFuerzas(P,N,G,M,population):
             for d in range(N):
                 value=0
                 value = value+M[i]*M[j]
-                value = value/(calcularR(population[i],population[j],N)+.1)
+                value = value/(calcularR(population[i],population[j],N)+e)
                 value = value*G*restPos(population[i],population[j],d)
                 f.append(value)
                 print
@@ -85,10 +87,10 @@ def calcularFuerzas(P,N,G,M,population):
     f=[]
     for i in range(P):
         f=[]
-        for j in range(P): 
+        for d in range(N): 
             value=0
-            if j != i :
-                for d in range(N):
+            for j in range(P):
+                if j != i :
                     r = random.random()
                     value = value +(r*np.array(FT)[i,j,d])
             f.append(value)
@@ -126,17 +128,24 @@ def calcularPosiciones(P,N,population,v,values,W):
                 population[i][j]= 1
                 if calcularPeso(population[i],values) > W:
                     population[i][j]= 0
-            elif v[i][j] < 0 and population[i][j]==1:
+            if v[i][j] < 0 and population[i][j]==1:
                 population[i][j]= 0
     return population
 
-values = [[2,3],[3,4],[4,5],[5,6]]
-N = 4
-P = 4
-W = 5
+def leerCSV():
+    problema2 = pd.read_csv('p.csv')
+    param = pd.read_csv('s.csv')
+    lista = []
+    for i in range(problema2['Peso'].size):
+        item = [problema2['Peso'][i],problema2['Valor'][i]]
+        lista.append(item)
+    N = param['Parametros'][0]
+    P = param['Parametros'][1]
+    W = param['Parametros'][2]
+    return N,P,W,lista
+
+[N,P,W,values] = leerCSV()
 G0 = 100.0
-alpha = 2
-maxIter = 10
 population = initialPopulation(values,N,P,W)
 v=list(np.zeros((P, N)))
 best = []
@@ -144,7 +153,14 @@ worst = []
 M=[]
 F = []
 a=[]
+e=0.5
+print('N: ',N)
+print('P: ',P)
+print('W: ',W)
 print("Poblacion: ",population)
+
+maxIter = (N//2)+ P
+alpha = maxIter*0.2
 
 for i in range(maxIter):
     fitness = calcularFitness(population,values,N,P)
@@ -157,10 +173,13 @@ for i in range(maxIter):
     worst = fitness.index(w)
     print('Best: ' + str(population[best]) + str(fitness[best]))
     print('Worst: '+ str(population[worst]) + str(fitness[worst]))
+    print('Media de Fitness: ',np.mean(fitness))
+    print('Desviacion estandar: ',np.std(fitness))
     M = calcularMasas(fitness,b,w,P)
     print("Masas: ",M)
-    F = calcularFuerzas(P,N,G,M,population)
-    print("Fuerzas sobre cada agente: ",np.array(F))
+    F = calcularFuerzas(P,N,G,M,population,e)
+    print("Fuerzas sobre cada agente: ")
+    print(np.array(F))
     a = calcularAceleracion(P,N,M,F)
     print("Aceleracion: ",a)
     v = calcularVelocidad(P,N,v,a)
