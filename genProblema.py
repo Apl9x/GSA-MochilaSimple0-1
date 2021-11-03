@@ -2,6 +2,7 @@ import pandas as pd
 import random
 import numpy as np
 
+#Generamos parametros (N,P y W) y valores de peso y valor al azar
 def generarVectorAlAzar():
     N = random.randint(5,20)
     P = int((random.randint(50,100)/100)*N)
@@ -22,12 +23,16 @@ def generarVectorAlAzar():
     print('Values: ',values)
     return N,P,W,values
 
+#Generamos csv con los valores y los parametros
 def generarCSV(values):
     problema = pd.DataFrame(values,columns=['Peso','Valor'])
+    #p.csv contiene los valores de peso y valor
     problema.to_csv('p.csv')
     param = pd.DataFrame([N,P,W],columns=['Parametros'])
+    #s.csv contiene los valores de los parametros N,P y W
     param.to_csv('s.csv')
 
+#Funcion de lectura de los csv con el problema
 def leerCSV():
     problema2 = pd.read_csv('p.csv')
     param = pd.read_csv('s.csv')
@@ -40,8 +45,11 @@ def leerCSV():
     W = param['Parametros'][2]
     return N,P,W,lista
 
+#Generamos problema
 [N,P,W,values] = generarVectorAlAzar()
+#Guardamos problema en los csv
 generarCSV(values)
+#Leemos el problema de los csv
 [N,P,W,lista] = leerCSV()
 print('N: ',N)
 print('P: ',P)

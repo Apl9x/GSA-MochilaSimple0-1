@@ -3,13 +3,13 @@ import random
 import numpy as np
 import pandas as pd
 
-def calcularPeso(sol,values):
+def calcularPeso(sol,values):#Función para calcular el peso de una solucion
     peso = 0
     for i in range(N):
         peso = peso + sol[i]*(values[i][0])
     return peso
 
-def calcularFitness(population,values,N,P):
+def calcularFitness(population,values,N,P):#Funcion para calcular el fitness de la poblacion
     fitness=[]
     for i in range(P):
         valor = 0
@@ -18,14 +18,14 @@ def calcularFitness(population,values,N,P):
         fitness.append(valor)
     return fitness
 
-def initialPopulation(values,N,P,W):
+def initialPopulation(values,N,P,W):#Funcion para generar de forma aleatoria los agentes iniciales
     population = []
     iteraciones = N
     for i in range(P):
         sol = [0]*N
         peso = 0  
         j = 0
-        while peso < W and j < iteraciones:
+        while peso <= W and j < iteraciones:
             pos = random.randrange(0,N,1)
             sol[pos] = 1
             pesoAnt = peso
@@ -37,13 +37,13 @@ def initialPopulation(values,N,P,W):
         population.append(sol)
     return population
 
-def actualizarG(t,G0,alpha,maxIter):
+def actualizarG(t,G0,alpha,maxIter):#Funcion de actualizacion de la constante de gravedad
     G = (-alpha * t)/maxIter
     G = math.exp(G)
     G = G * G0
     return G
 
-def calcularMasas(fit,best,worst,P):
+def calcularMasas(fit,best,worst,P):#Funcion de calculo de las masas de cada agente
     m=[]
     M=[]
     for i in range(P):
@@ -55,17 +55,17 @@ def calcularMasas(fit,best,worst,P):
         M.append(m[i]/suma)
     return M
 
-def restPos(xi,xj,d):
+def restPos(xi,xj,d):#Funcion de resta de posicion especifica
     return xj[d] - xi[d]
 
-def calcularR(x1,x2,N):
+def calcularR(x1,x2,N):#Funcion de calculo de la distancia euclidiana
     suma=0
     for i in range(N):
         suma = suma + (x2[i]-x1[i])**2
     R=math.sqrt(suma)
     return R
 
-def calcularFuerzas(P,N,G,M,population,e):
+def calcularFuerzas(P,N,G,M,population,e):#Funcion de calculo de las fuerzas en todas las direcciones Fijd y la fuerza total aplicada en cada agente en cada direccion Fid
     FT=[]
     Ft=[]
     f=[]
@@ -97,7 +97,7 @@ def calcularFuerzas(P,N,G,M,population,e):
         F.append(f)
     return(F)
 
-def calcularAceleracion(P,N,M,F):
+def calcularAceleracion(P,N,M,F):#Funcion de actualizacion de aceleraciones
     a=[]
     for i in range(P):
         vec=[]
@@ -110,7 +110,7 @@ def calcularAceleracion(P,N,M,F):
         a.append(vec)
     return a
 
-def calcularVelocidad(P,N,v,a):
+def calcularVelocidad(P,N,v,a):#Funciond de actualizacion de velocidades
     _v = []
     for i in range(P):
         vec=[]
@@ -121,7 +121,7 @@ def calcularVelocidad(P,N,v,a):
         _v.append(vec)
     return _v
 
-def calcularPosiciones(P,N,population,v,values,W):
+def calcularPosiciones(P,N,population,v,values,W):#Funcion de actualizacion de posiciones
     for i in range(P):
         for j in range(N):
             if v[i][j] > 0 and population[i][j]==0:
@@ -132,7 +132,7 @@ def calcularPosiciones(P,N,population,v,values,W):
                 population[i][j]= 0
     return population
 
-def leerCSV():
+def leerCSV():#Funcion de lectura del problema en los csv
     problema2 = pd.read_csv('p.csv')
     param = pd.read_csv('s.csv')
     lista = []
@@ -144,9 +144,12 @@ def leerCSV():
     W = param['Parametros'][2]
     return N,P,W,lista
 
+#Leemos el problema
 [N,P,W,values] = leerCSV()
-G0 = 100.0
+#Inicializamos poblacion
 population = initialPopulation(values,N,P,W)
+#Inicializamos parametros
+G0 = 100.0
 v=list(np.zeros((P, N)))
 best = []
 worst = []
@@ -154,17 +157,19 @@ M=[]
 F = []
 a=[]
 e=0.5
+maxIter = (N//2)+ P
+alpha = maxIter*0.2
 print('N: ',N)
 print('P: ',P)
 print('W: ',W)
 print("Poblacion: ",population)
 
-maxIter = (N//2)+ P
-alpha = maxIter*0.2
 
 for i in range(maxIter):
+    #Calculamos fitness
     fitness = calcularFitness(population,values,N,P)
     print("fitness: ",fitness)
+    #Actualizamos G,best y worst
     G = actualizarG(i,G0,alpha,maxIter)
     print("G: ",G)
     b = max(fitness)
@@ -173,8 +178,10 @@ for i in range(maxIter):
     worst = fitness.index(w)
     print('Best: ' + str(population[best]) + str(fitness[best]))
     print('Worst: '+ str(population[worst]) + str(fitness[worst]))
+    #Imprimimos la media y la desviacion estandar de los fitness
     print('Media de Fitness: ',np.mean(fitness))
     print('Desviacion estandar: ',np.std(fitness))
+    #Actualizamos Masas(M), Fuerzas(Fid), aceleraciones(aid) y velocidades(vid)
     M = calcularMasas(fitness,b,w,P)
     print("Masas: ",M)
     F = calcularFuerzas(P,N,G,M,population,e)
@@ -184,6 +191,8 @@ for i in range(maxIter):
     print("Aceleracion: ",a)
     v = calcularVelocidad(P,N,v,a)
     print("Velocidad: ",v)
+    #Actualizamos posiciones (xid)
     population = calcularPosiciones(P,N,population,v,values,W)
+    #Mostramos Nueva Poblacion
     print("-------------------------------------------------------------------")
     print("Nueva Poblacion: ",population)
