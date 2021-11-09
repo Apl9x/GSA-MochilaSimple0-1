@@ -2,6 +2,7 @@ import math
 import random
 import numpy as np
 import pandas as pd
+from time import time
 
 def calcularPeso(sol,values):#Función para calcular el peso de una solucion
     peso = 0
@@ -144,6 +145,9 @@ def leerCSV():#Funcion de lectura del problema en los csv
     W = param['Parametros'][2]
     return N,P,W,lista
 
+
+#INICIO
+inicio = time()
 #Leemos el problema
 [N,P,W,values] = leerCSV()
 #Inicializamos poblacion
@@ -196,3 +200,8 @@ for i in range(maxIter):
     #Mostramos Nueva Poblacion
     print("-------------------------------------------------------------------")
     print("Nueva Poblacion: ",population)
+
+#FIN
+fin = time()
+
+print('Tiempo de ejecucion: ',fin-inicio)
