@@ -4,8 +4,8 @@ import numpy as np
 
 #Generamos parametros (N,P y W) y valores de peso y valor al azar
 def generarVectorAlAzar():
-    N = random.randint(5,20)
-    P = int((random.randint(50,100)/100)*N)
+    N = 16
+    P = 30
     peso= []
     valor= []
     values=[]
